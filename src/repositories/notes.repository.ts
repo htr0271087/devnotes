@@ -53,6 +53,12 @@ export class NotesRepository {
     return this.db.prepare(`SELECT * FROM tags WHERE name = ?`).get(name) as TagRow
   }
 
+  // note_tags rows are removed by ON DELETE CASCADE.
+  deleteTagByName(name: string): number {
+    const result = this.db.prepare(`DELETE FROM tags WHERE name = ?`).run(name)
+    return result.changes
+  }
+
   setNoteTags(noteId: string, tagIds: string[]): void {
     this.db.prepare(`DELETE FROM note_tags WHERE note_id = ?`).run(noteId)
     const insert = this.db.prepare(

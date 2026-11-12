@@ -158,6 +158,34 @@ describe('PATCH /api/notes/:id', () => {
   })
 })
 
+describe('DELETE /api/tags/:name', () => {
+  it('deletes the tag, detaches it from notes, and returns 204', async () => {
+    const created = await (
+      await app.request('/api/notes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: 'Tagged', tags: ['keep', 'drop'] }),
+      })
+    ).json()
+
+    const del = await app.request('/api/tags/drop', { method: 'DELETE' })
+    expect(del.status).toBe(204)
+
+    const note = await (await app.request(`/api/notes/${created.id}`)).json()
+    expect(note.tags).toEqual(['keep'])
+  })
+
+  it('returns 404 for unknown tag', async () => {
+    const res = await app.request('/api/tags/ghost', { method: 'DELETE' })
+    expect(res.status).toBe(404)
+  })
+
+  it('returns 400 for a blank tag name', async () => {
+    const res = await app.request('/api/tags/%20', { method: 'DELETE' })
+    expect(res.status).toBe(400)
+  })
+})
+
 describe('DELETE /api/notes/:id', () => {
   it('deletes a note and returns 204', async () => {
     const created = await (

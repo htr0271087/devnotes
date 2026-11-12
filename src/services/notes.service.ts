@@ -9,8 +9,8 @@ export class NoteNotFoundError extends Error {
 }
 
 export class TagNotFoundError extends Error {
-  constructor(name: string) {
-    super(`Tag not found: ${name}`)
+  constructor(id: string) {
+    super(`Tag not found: ${id}`)
     this.name = 'TagNotFoundError'
   }
 }
@@ -114,9 +114,9 @@ export class NotesService {
     return this.getNoteById(id)
   }
 
-  deleteTag(name: string): void {
-    const changes = this.repo.deleteTagByName(name)
-    if (changes === 0) throw new TagNotFoundError(name)
+  deleteTag(id: string): void {
+    const changes = this.repo.deleteTagById(id)
+    if (changes === 0) throw new TagNotFoundError(id)
   }
 
   deleteNote(id: string): void {

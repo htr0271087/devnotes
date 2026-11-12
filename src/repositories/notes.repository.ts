@@ -54,8 +54,8 @@ export class NotesRepository {
   }
 
   // note_tags rows are removed by ON DELETE CASCADE.
-  deleteTagByName(name: string): number {
-    const result = this.db.prepare(`DELETE FROM tags WHERE name = ?`).run(name)
+  deleteTagById(id: string): number {
+    const result = this.db.prepare(`DELETE FROM tags WHERE id = ?`).run(id)
     return result.changes
   }
 

@@ -6,10 +6,11 @@ import { createApp } from '../src/app.js'
 import type { Hono } from 'hono'
 
 let app: Hono
+let repo: NotesRepository
 
 beforeEach(() => {
   const db = createDatabase(':memory:')
-  const repo = new NotesRepository(db)
+  repo = new NotesRepository(db)
   const service = new NotesService(repo)
   app = createApp(service)
 })
@@ -158,7 +159,7 @@ describe('PATCH /api/notes/:id', () => {
   })
 })
 
-describe('DELETE /api/tags/:name', () => {
+describe('DELETE /api/tags/:id', () => {
   it('deletes the tag, detaches it from notes, and returns 204', async () => {
     const created = await (
       await app.request('/api/notes', {
@@ -167,20 +168,27 @@ describe('DELETE /api/tags/:name', () => {
         body: JSON.stringify({ title: 'Tagged', tags: ['keep', 'drop'] }),
       })
     ).json()
+    const dropId = repo.upsertTag('drop').id
 
-    const del = await app.request('/api/tags/drop', { method: 'DELETE' })
+    const del = await app.request(`/api/tags/${dropId}`, { method: 'DELETE' })
     expect(del.status).toBe(204)
 
     const note = await (await app.request(`/api/notes/${created.id}`)).json()
     expect(note.tags).toEqual(['keep'])
   })
 
-  it('returns 404 for unknown tag', async () => {
+  it('returns 404 for unknown tag id', async () => {
     const res = await app.request('/api/tags/ghost', { method: 'DELETE' })
     expect(res.status).toBe(404)
   })
 
-  it('returns 400 for a blank tag name', async () => {
+  it('returns 404 when deleting the same tag twice', async () => {
+    const id = repo.upsertTag('once').id
+    expect((await app.request(`/api/tags/${id}`, { method: 'DELETE' })).status).toBe(204)
+    expect((await app.request(`/api/tags/${id}`, { method: 'DELETE' })).status).toBe(404)
+  })
+
+  it('returns 400 for a blank tag id', async () => {
     const res = await app.request('/api/tags/%20', { method: 'DELETE' })
     expect(res.status).toBe(400)
   })

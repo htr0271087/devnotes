@@ -4,6 +4,6 @@ import * as h from '../handlers/tags.handler.js'
 
 export function tagsRoutes(service: NotesService): Hono {
   const router = new Hono()
-  router.delete('/:name', h.deleteTag(service))
+  router.delete('/:id', h.deleteTag(service))
   return router
 }

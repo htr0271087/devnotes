@@ -71,6 +71,22 @@ export class NotesService {
     }))
   }
 
+  searchNotes(term: string): Note[] {
+    const rows = this.repo.searchNotesByTitle(term)
+    if (rows.length === 0) return []
+
+    const tagMap = this.repo.getTagsForNotes(rows.map((r) => r.id))
+    return rows.map((row) => ({
+      id: row.id,
+      title: row.title,
+      content: row.content,
+      language: row.language,
+      tags: (tagMap.get(row.id) ?? []).map((t) => t.name),
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }))
+  }
+
   updateNote(id: string, input: UpdateNoteInput): Note {
     const existing = this.repo.findNoteById(id)
     if (!existing) throw new NoteNotFoundError(id)

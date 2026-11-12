@@ -6,7 +6,8 @@ export function notesRoutes(service: NotesService): Hono {
   const router = new Hono()
   router.get('/', h.listNotes(service))
   router.post('/', h.createNote(service))
-  router.get('/:id', h.getNote(service))
+  router.get('/search', h.searchNotes(service))
+  router.get('/:id',h.getNote(service))
   router.patch('/:id', h.updateNote(service))
   router.delete('/:id', h.deleteNote(service))
   return router

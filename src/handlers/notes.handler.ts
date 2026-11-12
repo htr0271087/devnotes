@@ -17,6 +17,14 @@ export function listNotes(service: NotesService) {
   }
 }
 
+export function searchNotes(service: NotesService) {
+  return async (c: Context) => {
+    const q = c.req.query('q')?.trim()
+    if (!q) return c.json({ error: 'q is required' }, 400)
+    return c.json(service.searchNotes(q), 200)
+  }
+}
+
 export function createNote(service: NotesService) {
   return async (c: Context) => {
     const body = await c.req.json<CreateNoteInput>()

@@ -64,6 +64,46 @@ describe('GET /api/notes', () => {
   })
 })
 
+describe('GET /api/notes/search', () => {
+  async function create(title: string) {
+    await app.request('/api/notes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, tags: ['t'] }),
+    })
+  }
+
+  it('returns notes whose title matches, case-insensitively', async () => {
+    await create('Learning TypeScript')
+    await create('Cooking notes')
+    const res = await app.request('/api/notes/search?q=typescript')
+    expect(res.status).toBe(200)
+    const notes = await res.json()
+    expect(notes).toHaveLength(1)
+    expect(notes[0].title).toBe('Learning TypeScript')
+    expect(notes[0].tags).toEqual(['t'])
+  })
+
+  it('returns empty array when nothing matches', async () => {
+    await create('Alpha')
+    const res = await app.request('/api/notes/search?q=zzz')
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual([])
+  })
+
+  it('treats % and _ literally', async () => {
+    await create('100% done')
+    await create('plain')
+    const res = await app.request('/api/notes/search?q=%25')
+    expect(await res.json()).toHaveLength(1)
+  })
+
+  it('returns 400 when q is missing or blank', async () => {
+    expect((await app.request('/api/notes/search')).status).toBe(400)
+    expect((await app.request('/api/notes/search?q=%20')).status).toBe(400)
+  })
+})
+
 describe('GET /api/notes/:id', () => {
   it('returns the note by id', async () => {
     const created = await (

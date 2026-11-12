@@ -23,6 +23,15 @@ export class NotesRepository {
     return this.db.prepare(`SELECT * FROM notes ORDER BY created_at DESC`).all() as NoteRow[]
   }
 
+  searchNotesByTitle(term: string): NoteRow[] {
+    const escaped = term.replace(/[\\%_]/g, (ch) => `\\${ch}`)
+    return this.db
+      .prepare(
+        `SELECT * FROM notes WHERE title LIKE ? ESCAPE '\\' ORDER BY created_at DESC`
+      )
+      .all(`%${escaped}%`) as NoteRow[]
+  }
+
   updateNote(id: string, fields: Partial<Omit<NoteRow, 'id' | 'created_at'>>): void {
     const sets = Object.keys(fields)
       .map((k) => `${k} = @${k}`)
